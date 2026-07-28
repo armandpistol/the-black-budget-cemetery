@@ -1,0 +1,8 @@
+requests
+beautifulsoup4
+pdfplumber
+snowflake-connector-python
+dbt-snowflake
+pytesseract
+pdf2image
+Pillow

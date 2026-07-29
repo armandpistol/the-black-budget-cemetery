@@ -20,7 +20,7 @@ def extract_text_from_pdf(pdf_path: str, dpi: int = 300) -> dict:
 
     Returns:
         A dict with:
-          - 'source_file': filename of the PDF
+          - 'source_file': source_filename of the PDF
           - 'page_count': number of pages processed
           - 'pages': list of dicts, one per page, each with 'page_num' and 'text'
           - 'full_text': all pages concatenated into one string
@@ -69,3 +69,16 @@ if __name__ == "__main__":
     print(f"\n✓ Extracted {result['page_count']} pages from '{result['source_file']}'")
     print(f"\n--- FIRST PAGE PREVIEW ---\n")
     print(result["pages"][0]["text"][:1000])
+
+    import json
+    import pathlib
+
+    output_dir = pathlib.Path(__file__).parents[2] / "data" / "processed"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    output_path = output_dir / "blue_book_incident_17_kenneth_arnold.json"
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+
+    print(f"\n✓ Saved to {output_path}")

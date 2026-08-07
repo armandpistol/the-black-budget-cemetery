@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: raw
+    database: COLD_WAR_ANOMALIES
+    schema: RAW
+    tables:
+      - name: documents
+  

@@ -6,4 +6,5 @@ sources:
     schema: RAW
     tables:
       - name: documents
-  
+      - name: programs
+      - name: events

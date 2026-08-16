@@ -5,9 +5,9 @@ declassified U.S. government records on anomalous phenomena into a
 queryable Snowflake data warehouse with a Tableau dashboard.
 
 ## Programs Covered
-- **Project Blue Book** (USAF, 1947–1969) — UFO sighting investigations
-- **Project Stargate / Sun Streak / Grill Flame** (DIA-CIA) — Remote viewing research
-- **MKUltra / Project Artichoke / Bluebird** (CIA) — Consciousness research programs
+- **Project Mogul / Sign / Grudge / Twinkle / Blue Book** (USAF, 1947–1969) — UFO sighting investigations
+- **Project Grill Flame / Sun Streak / Stargate** (DIA-CIA) — Remote viewing research
+- **Project MKUltra / Artichoke / Bluebird** (CIA) — Consciousness research programs
 
 ## Source Archives
 - AARO FOIA Reading Room
@@ -29,23 +29,27 @@ queryable Snowflake data warehouse with a Tableau dashboard.
 
 ## Pipeline Architecture
 ```
-Declassified PDFs → OCR Extraction → JSON → Snowflake RAW
+Declassified PDFs → OCR (batch) → JSON → Snowflake RAW
                                               ↓
-                                         dbt Models
+                                   event_extraction (Python)
                                               ↓
-                                      Tableau Dashboard
+                                       Snowflake EVENTS
+                                              ↓
+                                          dbt Models
+                                              ↓
+                                           Tableau
 ```
 
 ## Project Status
-🔄 **In Progress** — Pipeline foundation complete. Currently building:
+🔄 **In Progress** — End-to-end pipeline complete. Currently building:
 - [x] Project structure and environment setup
 - [x] OCR extraction (pdf2image + Tesseract)
 - [x] Snowflake schema (programs, documents, events tables)
 - [x] Snowflake loader script
-- [ ] Airflow DAG orchestration
-- [ ] dbt transformation models
-- [ ] Events table population (geospatial data)
-- [ ] Tableau dashboard
+- [x] Airflow DAG orchestration
+- [x] dbt transformation models
+- [x] Events table population (geospatial data)
+- [x] Tableau dashboard (live Snowflake connection, incident map)
 - [ ] Full archive ingestion
 
 ## Setup
@@ -59,5 +63,5 @@ cp .env.example .env  # add your Snowflake credentials
 ```
 
 ## Author
-Built by Armand — former Law
+Built by Armand - former Law
 Enforcement Officer, transitioning into data engineering.

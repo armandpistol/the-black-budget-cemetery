@@ -1,67 +1,82 @@
-# US Cold War Anomalies Pipeline
+# THE BLACK-BUDGET CEMETERY
 
-A data engineering portfolio project that ingests, parses, and surfaces
-declassified U.S. government records on anomalous phenomena into a
-queryable Snowflake data warehouse with a Tableau dashboard.
+An open-source, multimodal AI and geospatial intelligence platform that ingests, 
+extracts, and interrogates declassified U.S. government records on Cold War-era 
+anomalous phenomena.
 
-## Programs Covered
-- **Project Mogul / Sign / Grudge / Twinkle / Blue Book** (USAF, 1947–1969) — UFO sighting investigations
-- **Project Grill Flame / Sun Streak / Stargate** (DIA-CIA) — Remote viewing research
-- **Project MKUltra / Artichoke / Bluebird** (CIA) — Consciousness research programs
+> **Architecture Note:** This repository is actively pivoting from a v1.0 Enterprise BI stack (Snowflake/Tableau/Tesseract — preserved under git tag `v1.0-snowflake-poc`) to a v2.0 production-grade, open-source AI engineering stack.
+
+## Intelligence Sectors & Programs in Scope
+- **Sector Alpha (Material & Spatial):** Project Mogul, Sign, Grudge, Twinkle, and Blue Book (USAF, 1947–1969), Project Moon Dust / Operation Blue Fly (USAF FTD / Army Intelligence) — curated high-value anomalous aerial incident files.
+- **Sector Beta (Cognitive & Psychological):** Project MKUltra, MKDelta, MKNaomi, MKOFTEN, Artichoke, Bluebird (CIA) & Project Grill Flame, Sun Streak, Often / Chickwit, Scanate, Stargate (DIA/CIA).
+- **Sector Gamma (Administrative & Systemic Deception):** Redaction forensics, bureaucratic routing, and FOIA chain-of-custody analysis.
 
 ## Source Archives
+- National Archives Catalog & Bulk Exports
+- FBI Vault
 - AARO FOIA Reading Room
-- National Archives (NARA microfilm T1206)
-- FBI Vault (vault.fbi.gov)
 
-## Tech Stack
+## v2.0 Tech Stack
 | Layer | Technology |
-|-------|-----------|
+|-------|----------|
 | Language | Python 3.11 |
-| OCR | Tesseract 5.5 + pdf2image |
+| Multimodal Vision & Extraction | Qwen 2.5-VL (Ollama + LiteLLM) |
 | Orchestration | Apache Airflow (Docker) |
-| Processing | Apache Spark |
-| Warehouse | Snowflake (AWS) |
+| Storage & Vector/Geo Node | Supabase (PostgreSQL + pgvector + PostGIS) |
 | Transformation | dbt Core |
-| Version Control | Git + GitHub |
-| Visualization | Tableau |
-| Containerization | Docker + Docker Compose |
+| Agentic Workflow & LLM | LangGraph + Llama 3.1 (Groq) |
+| Presentation UI | Gradio Tech-Noir Terminal |
+| Version Control & Deployment | Dual-Remote Git (GitHub + Hugging Face Spaces -> `armandpistol.dev`) |
 
-## Pipeline Architecture
-```
-Declassified PDFs → OCR (batch) → JSON → Snowflake RAW
-                                              ↓
-                                   event_extraction (Python)
-                                              ↓
-                                       Snowflake EVENTS
-                                              ↓
-                                          dbt Models
-                                              ↓
-                                           Tableau
+## v2.0 Pipeline Architecture
+```text
+Declassified Sources (NARA, FBI Vault & AARO APIs/PDFs)
+                       │
+                       ▼ 
+        ┌──────────────────────────────┐
+        │   Qwen 2.5-VL (via Ollama)   │
+        │  + LiteLLM / Pydantic v2     │
+        └──────────────┬───────────────┘
+                       │ 
+                       ▼
+        ┌──────────────────────────────┐
+        │   Supabase (PostgreSQL)      │
+        │  RAW + pgvector + PostGIS    │
+        └──────────────┬───────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────┐
+        │    dbt Core (dbt-postgres)   │
+        │   Staging Views & Marts      │
+        └──────────────┬───────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────┐
+        │  LangGraph Multi-Sector      │
+        │  Agents + Llama 3.1 (Groq)   │
+        └──────────────┬───────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────┐
+        │   Gradio Tech-Noir Terminal  │
+        │      (armandpistol.dev)      │
+        └──────────────────────────────┘
 ```
 
 ## Project Status
-🔄 **In Progress** — End-to-end pipeline complete. Currently building:
-- [x] Project structure and environment setup
-- [x] OCR extraction (pdf2image + Tesseract)
-- [x] Snowflake schema (programs, documents, events tables)
-- [x] Snowflake loader script
-- [x] Airflow DAG orchestration
-- [x] dbt transformation models
-- [x] Events table population (geospatial data)
-- [x] Tableau dashboard (live Snowflake connection, incident map)
-- [ ] Full archive ingestion
+**v1.0 Legacy BI Proof-of-Concept (Completed — Tag: v1.0-snowflake-poc)**
+- [x] Dockerized Airflow orchestration + Tesseract OCR extraction
+- [x] Snowflake RAW/STAGING/MARTS schemas + dbt-snowflake models
+- [x] Live Tableau geospatial incident dashboard
 
-## Setup
-```bash
-git clone https://github.com/armandpistol/us-cold-war-anomalies-pipeline.git
-cd us-cold-war-anomalies-pipeline
-python3.11 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env  # add your Snowflake credentials
-```
+**v2.0 AI Platform Pivot (Active Sprint)**
+- [x] Pydantic v2 Multimodal Forensic Schema (BlackBudgetCemeterySchema)
+- [ ] Automated multi-source ingestion & manifest tracking (NARA, FBI Vault, AARO)
+- [ ] In-memory multimodal extraction pipeline (Qwen 2.5-VL via Ollama + LiteLLM)
+- [ ] Supabase storage node deployment (PostgreSQL + pgvector + PostGIS)
+- [ ] dbt Core (dbt-postgres) staging & forensic mart transformations
+- [ ] LangGraph 3-Sector agentic workflow & Gradio Tech-Noir UI deployment
 
 ## Author
-Built by Armand - former Law
-Enforcement Officer, transitioning into data engineering.
+Armand Pistol - former Law
+Enforcement Officer, transitioning into AI Engineering.

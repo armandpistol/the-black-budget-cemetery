@@ -72,7 +72,7 @@ Declassified Sources (NARA, FBI Vault & AARO APIs/PDFs)
 **v2.0 AI Platform Pivot (Active Sprint)**
 - [x] Pydantic v2 Multimodal Forensic Schema (BlackBudgetCemeterySchema)
 - [ ] Automated multi-source ingestion & manifest tracking (NARA, FBI Vault, AARO)
-- [ ] In-memory multimodal extraction pipeline (Qwen 2.5-VL via Ollama + LiteLLM)
+- [x] In-memory multimodal extraction pipeline (Qwen 2.5-VL via Ollama + LiteLLM)
 - [ ] Supabase storage node deployment (PostgreSQL + pgvector + PostGIS)
 - [ ] dbt Core (dbt-postgres) staging & forensic mart transformations
 - [ ] LangGraph 3-Sector agentic workflow & Gradio Tech-Noir UI deployment

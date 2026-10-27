@@ -68,13 +68,13 @@ def extract_document_intelligence(
     ollama_base_url: str = "http://localhost:11435",
 ) -> BlackBudgetCemeterySchema:
     """
-    Streams document pages into Qwen 2.5-VL (3B) and returns a validated BlackBudgetCemeterySchema object.
-    Uses a flat JSON template to prevent 3B models from getting lost in nested Pydantic $defs references.
+    Streams document pages into Qwen 2.5-VL (7B) and returns a validated BlackBudgetCemeterySchema object.
+    Uses a flat JSON template to prevent 7B models from getting lost in nested Pydantic $defs references.
     """
     print(f"[*] Loading '{os.path.basename(source)}' into RAM (max_pages={max_pages})...")
     pages = load_pages_into_ram(source, dpi=dpi, max_pages=max_pages)
 
-    # Every string field uses explicit <...> options so the 3B model knows nothing is frozen
+    # Every string field uses explicit <...> options so the 7B model knows nothing is frozen
     json_template = """{
       "nara_id": "%s",
       "document_title": "<extract exact headline or subject title>",

@@ -74,7 +74,7 @@ def extract_document_intelligence(
     print(f"[*] Loading '{os.path.basename(source)}' into RAM (max_pages={max_pages})...")
     pages = load_pages_into_ram(source, dpi=dpi, max_pages=max_pages)
 
-    # Every string field uses explicit <...> options so the 7B model knows nothing is frozen
+    # Every string field uses explicit <...> options so the model knows nothing is frozen
     json_template = """{
       "nara_id": "%s",
       "document_title": "<extract exact headline or subject title>",

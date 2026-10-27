@@ -65,7 +65,7 @@ def extract_document_intelligence(
     nara_id: str = "NARA-595466-09204",
     dpi: int = 150,
     max_pages: int = 1,
-    ollama_base_url: str = "http://localhost:11434",
+    ollama_base_url: str = "http://localhost:11435",
 ) -> BlackBudgetCemeterySchema:
     """
     Streams document pages into Qwen 2.5-VL (3B) and returns a validated BlackBudgetCemeterySchema object.
@@ -125,9 +125,9 @@ def extract_document_intelligence(
             }
         )
 
-    print("[*] Dispatching optimized payload to Qwen 2.5-VL (3B) via LiteLLM...")
+    print("[*] Dispatching optimized payload to Qwen 2.5-VL (7B) via LiteLLM...")
     response = completion(
-        model="ollama_chat/qwen2.5vl:3b",
+        model="ollama_chat/qwen2.5vl:7b",
         messages=[{"role": "user", "content": content_payload}],
         api_base=ollama_base_url,
         response_format={"type": "json_object"},

@@ -81,7 +81,7 @@ def extract_document_intelligence(
       "pristine_transcript": "<transcribe EVERY paragraph from top to bottom of the page in full detail>",
       "sector_alpha": {
         "craft_type": "<disc | sphere | triangle | cylinder | tic-tac | v-shape | bright light | jellyfish | egg | unknown>",
-        "occupant_type": "<extract pilot, radar controller, witness role, or entity description, else unknown>",
+        "occupant_type": "<biological or humanoid entities observed inside/near the anomaly, or 'none observed'>",
         "telemetry_matrix": {"speed_mph": "<extracted speed>", "total_sighting_duration": "<total duration of sighting>"},
         "latitude": null,
         "longitude": null
@@ -110,7 +110,8 @@ def extract_document_intelligence(
                 f"2. Replace all '<...>' placeholders with real facts from the image.\n"
                 f"3. DATE MATCHING: Check the year in the text (e.g., 1952) and pick the matching 'historical_era' range (1947-1991 is 'Cold War (1947-1991)').\n"
                 f"4. DYNAMIC SCORING: Change 'linguistic_stress_score' from 5 to an integer between 1 (calm report) and 10 (high urgency/alarm) based on witness tone.\n"
-                f"5. GEOSPATIAL: Replace null in 'latitude' and 'longitude' with the approximate decimal coordinates of the city/airport named in the text."
+                f"5. GEOSPATIAL: Replace null in 'latitude' and 'longitude' with the approximate decimal coordinates of the city/airport named in the text.\n"
+                f"6. OCCUPANTS: For 'occupant_type', ONLY describe biological or humanoid entities inside/exiting the anomalous craft itself (use 'none observed' if only lights/craft were seen, NEVER the human pilot or witness)."
             ),
         }
     ]

@@ -2,9 +2,9 @@ version: 2
 
 sources:
   - name: raw
-    database: COLD_WAR_ANOMALIES
-    schema: RAW
+    database: postgres
+    schema: raw
     tables:
-      - name: documents
-      - name: programs
-      - name: events
+      - name: ingestion_manifest
+      - name: forensic_intelligence
+      - name: reference_knowledge_chunks

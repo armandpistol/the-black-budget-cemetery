@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: stg_ingestion_manifest
+    description: "Cleaned pipeline manifest tracking NARA/FBI/AARO ingestion status."
+    columns:
+      - name: nara_id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_forensic_intelligence
+    description: "Unpacked Sector Alpha/Beta/Gamma views with window-healed coordinates."
+    columns:
+      - name: nara_id
+        tests:
+          - unique
+          - not_null
+
+  - name: mart_forensic_matrix
+    description: "Production intelligence mart with reconstructed PostGIS geometry and healed metadata."
+    columns:
+      - name: nara_id
+        tests:
+          - unique
+          - not_null
+      # These two not_null tests mathematically prove our SQL window function healed Pages 2 & 4!
+      - name: latitude
+        tests:
+          - not_null
+      - name: longitude
+        tests:
+          - not_null
+      - name: geom
+        tests:
+          - not_null

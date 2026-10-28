@@ -74,7 +74,7 @@ Declassified Sources (NARA, FBI Vault & AARO)
 - [ ] Automated multi-source ingestion & manifest tracking (NARA, FBI Vault, AARO)
 - [x] In-memory multimodal extraction pipeline (Qwen 2.5-VL via Ollama + LiteLLM)
 - [x] Supabase storage node deployment (PostgreSQL + pgvector + PostGIS)
-- [ ] dbt Core (dbt-postgres) staging & forensic mart transformations
+- [x] dbt Core (dbt-postgres) staging & forensic mart transformations
 - [ ] LangGraph 3-Sector agentic workflow & Gradio Tech-Noir UI deployment
 
 ## Author

@@ -196,30 +196,60 @@ def ingest_single_document(source_path: str, nara_id: str, source_archive: str =
         conn.close()
 
 
-if __name__ == "__main__":
-    # Batch ingest all authentic NARA .jpg and .pdf records in data/raw/nara_595466/
-    batch_dir = PROJECT_ROOT / "data" / "raw" / "nara_595466"
-    target_files = sorted(
+def get_completed_nara_ids() -> set:
+    """Fetches all nara_id keys already marked COMPLETED in Supabase raw.ingestion_manifest."""
+    conn = get_supabase_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "SELECT nara_id FROM raw.ingestion_manifest WHERE ingestion_status = 'COMPLETED';"
+        )
+        return {row[0] for row in cursor.fetchall()}
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def run_incremental_batch(raw_root: Optional[pathlib.Path] = None) -> int:
+    """
+    Scans data/raw/ subdirectories for archival files (.jpg, .png, .pdf), skips any record
+    already marked COMPLETED in raw.ingestion_manifest, and ingests only new/pending files.
+    """
+    target_root = raw_root or (PROJECT_ROOT / "data" / "raw")
+    completed_ids = get_completed_nara_ids()
+    print(f"[*] Manifest Radar: {len(completed_ids)} records already COMPLETED in Supabase Vault.")
+
+    # Discover all supported archival files across data/raw/ subdirectories (excluding private_library)
+    candidate_files = sorted(
         [
-            f for f in batch_dir.iterdir()
-            if f.suffix.lower() in (".jpg", ".jpeg", ".png", ".pdf")
+            f for f in target_root.rglob("*")
+            if f.is_file()
+            and f.suffix.lower() in (".jpg", ".jpeg", ".png", ".pdf", ".mp3", ".wav", ".m4a", ".mp4", ".mov")
+            and "private_library" not in f.parts
         ]
     )
 
-    print(f"[*] Found {len(target_files)} archival documents in {batch_dir.name}. Starting batch run...\n")
-    for idx, file_path in enumerate(target_files, start=1):
-        # Construct a clean, deterministic NARA primary key from the archive series and filename
+    newly_ingested = 0
+    for file_path in candidate_files:
+        archive_folder = file_path.parent.name.upper().replace("_", "-")
         clean_stem = file_path.stem.replace("_", "-").upper()
-        record_id = f"NARA-595466-{clean_stem}"
+        record_id = f"{archive_folder}-{clean_stem}"
 
-        print(f"=== [{idx}/{len(target_files)}] Processing {file_path.name} ({record_id}) ===")
-        try:
-            ingest_single_document(
-                source_path=str(file_path),
-                nara_id=record_id,
-                source_archive="NARA-595466",
-            )
-        except Exception as e:
-            # Continue batch execution even if an individual archival file is corrupted
-            print(f"[!] Skipping {file_path.name} due to error: {e}")
-        print()
+        if record_id in completed_ids:
+            print(f"  [SKIP] {record_id} ({file_path.name}) already in Vault.")
+            continue
+
+        print(f"\n=== [NEW TARGET] Ingesting {file_path.name} -> {record_id} ===")
+        ingest_single_document(
+            source_path=str(file_path),
+            nara_id=record_id,
+            source_archive=archive_folder,
+        )
+        newly_ingested += 1
+
+    print(f"\n[+] Incremental batch finished. Newly ingested records: {newly_ingested}")
+    return newly_ingested
+
+
+if __name__ == "__main__":
+    run_incremental_batch()

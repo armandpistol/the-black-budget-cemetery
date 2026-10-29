@@ -1,21 +1,28 @@
-version: '3.8'
-
 x-airflow-common: &airflow-common
   build: .
+  env_file:
+    - .env
   environment:
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__FERNET_KEY: ''
-    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     PYTHONPATH: /opt/airflow
+    # Routes container AI calls out to the host Mac's port 11435 SSH tunnel -> Legion 5 GPU
+    OLLAMA_BASE_URL: http://host.docker.internal:11435
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
   volumes:
     - ./dags:/opt/airflow/dags
     - ./src:/opt/airflow/src
     - ./data:/opt/airflow/data
     - ./logs:/opt/airflow/logs
+    - ./cold_war_dbt:/opt/airflow/cold_war_dbt
     - ./.env:/opt/airflow/.env
+    # Mounts your host ~/.dbt/profiles.yml read-only so Airflow can run dbt-postgres tasks
+    - ~/.dbt:/home/airflow/.dbt:ro
   depends_on:
     postgres:
       condition: service_healthy

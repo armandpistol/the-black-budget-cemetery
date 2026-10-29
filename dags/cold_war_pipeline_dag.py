@@ -1,103 +1,59 @@
 """
 cold_war_pipeline_dag.py
-Orchestrates the full ingestion pipeline for declassified government documents.
+THE BLACK-BUDGET CEMETERY // v2.0 Master Orchestration DAG
+Coordinates incremental Multimodal Vision Ingestion (Qwen 2.5-VL -> Supabase pgvector/PostGIS)
+followed by dbt Core (dbt-postgres) staging/mart transformations and automated schema tests.
 """
 
 from datetime import datetime, timedelta
-from airflow import DAG
-from airflow.operators.python import PythonOperator
 import sys
-import os
 
-# Make src/ importable inside Airflow containers
-sys.path.insert(0, '/opt/airflow')
+from airflow import DAG
+from airflow.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
 
-from src.parsing.ocr_extractor import extract_text_from_pdf
-from src.ingestion.snowflake_loader import get_connection, insert_program, insert_document
+# Ensure /opt/airflow is on sys.path so 'from src.ingestion...' resolves cleanly
+if "/opt/airflow" not in sys.path:
+    sys.path.insert(0, "/opt/airflow")
 
-import json
-import pathlib
+from src.ingestion.supabase_loader import run_incremental_batch
 
 default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
+    "owner": "armandpistol",
+    "depends_on_past": False,
+    "email_on_failure": False,
+    "email_on_retry": False,
+    "retries": 1,
+    "retry_delay": timedelta(minutes=2),
 }
 
-def run_ocr_extraction(**context):
-    """Task 1: Extract text from PDF via OCR and save to JSON."""
-    pdf_path = '/opt/airflow/data/raw/blue_book_incident_17_kenneth_arnold.pdf'
-    output_dir = pathlib.Path('/opt/airflow/data/processed')
-    output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / 'blue_book_incident_17_kenneth_arnold.json'
-
-    print(f"Running OCR on {pdf_path}...")
-    result = extract_text_from_pdf(pdf_path)
-
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(result, f, ensure_ascii=False, indent=2)
-
-    print(f"✓ OCR complete. {result['page_count']} pages extracted.")
-    # Pass the output path to the next task via XCom
-    context['ti'].xcom_push(key='json_path', value=str(output_path))
-
-
-def run_snowflake_load(**context):
-    """Task 2: Load OCR JSON into Snowflake."""
-    json_path = context['ti'].xcom_pull(
-        task_ids='ocr_extraction', key='json_path'
-    )
-
-    print(f"Loading {json_path} into Snowflake...")
-    with open(json_path, 'r', encoding='utf-8') as f:
-        ocr_data = json.load(f)
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    try:
-        program_id = insert_program(
-            cursor,
-            program_name='Blue Book',
-            lead_agency='USAF',
-            start_year=1947,
-            end_year=1969,
-            description='USAF investigation of UFO reports.'
-        )
-        document_id = insert_document(cursor, program_id, ocr_data)
-        conn.commit()
-        print(f"✓ Loaded: program_id={program_id}, document_id={document_id}")
-
-    except Exception as e:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
-
-
 with DAG(
-    dag_id='cold_war_anomalies_pipeline',
+    dag_id="black_budget_cemetery_v2_pipeline",
     default_args=default_args,
-    description='Ingests declassified government documents into Snowflake',
-    schedule_interval=None,  # Manual trigger only for now
+    description="Tri-Modal (Qwen 2.5-VL + Whisper + OpenCV) extraction -> Supabase pgvector/PostGIS -> dbt Core",
+    schedule_interval="@weekly",  # Automated weekly radar sweep for newly staged declassifications
     start_date=datetime(2026, 1, 1),
     catchup=False,
-    tags=['cold-war', 'snowflake', 'ocr'],
+    tags=["black-budget-cemetery", "tri-modal", "supabase", "qwen-vl", "whisper", "dbt-postgres"],
 ) as dag:
 
-    ocr_task = PythonOperator(
-        task_id='ocr_extraction',
-        python_callable=run_ocr_extraction,
+    # Task 1: Incremental Manifest Check + In-Memory Qwen 2.5-VL Extraction + Supabase Upsert
+    ingest_task = PythonOperator(
+        task_id="incremental_supabase_ingest",
+        python_callable=run_incremental_batch,
     )
 
-    load_task = PythonOperator(
-        task_id='snowflake_load',
-        python_callable=run_snowflake_load,
+    # Task 2: Execute dbt-postgres Staging Views & Mart Table transformations in Supabase
+    dbt_run_task = BashOperator(
+        task_id="dbt_run_transformations",
+        bash_command="cd /opt/airflow/cold_war_dbt && dbt run",
     )
 
-    # Define task order: OCR must complete before loading
-    ocr_task >> load_task
+    # Task 3: Enforce automated dbt data quality tests (unique, not_null, healed PostGIS geometry)
+    dbt_test_task = BashOperator(
+        task_id="dbt_test_quality_gate",
+        bash_command="cd /opt/airflow/cold_war_dbt && dbt test",
+    )
+
+    # Pipeline execution lineage
+    ingest_task >> dbt_run_task >> dbt_test_task

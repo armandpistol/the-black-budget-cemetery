@@ -8,3 +8,5 @@ pydantic
 litellm
 psycopg2-binary
 dbt-postgres
+opencv-python-headless
+

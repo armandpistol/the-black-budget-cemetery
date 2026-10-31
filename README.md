@@ -77,7 +77,7 @@ Declassified Feeds (NARA / FBI Vault / AARO: .pdf, .jpg, .mp3, .wav, .mp4)
 - [x] Supabase Dual-Vault storage node deployment (`PostgreSQL` + `pgvector` HNSW + `PostGIS`)
 - [x] `dbt Core` (`dbt-postgres`) staging, window coordinate healing, marts & automated schema tests
 - [x] Incremental Manifest Radar & Airflow v2.0 DAG orchestration (`ingest >> dbt run >> dbt test`)
-- [ ] Automated multi-source archival fetcher (NARA/FBI Vault) & Private RAG Book/Paper chunker
+- [x] Automated multi-source archival fetcher (NARA/FBI Vault) & Private RAG Book/Paper chunker
 - [ ] LangGraph 3-Sector agentic workflow & Gradio Tech-Noir UI deployment
 
 ## Author

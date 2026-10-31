@@ -62,14 +62,17 @@ healed as (
             'radar / administrative memo'
         ) as craft_type,
 
-        -- Window Forward-Fill: Continuation pages (Pages 2 & 4) inherit coordinates from Page 1
+       -- Window Forward-Fill: Continuation pages inherit Page 1 coordinates;
+        -- National HQ assessments without a field city default to Pentagon/ODNI HQ (38.8719, -77.0563)
         coalesce(
             latitude,
-            max(latitude) over (partition by case_group_id)
+            max(latitude) over (partition by case_group_id),
+            38.8719
         ) as healed_latitude,
         coalesce(
             longitude,
-            max(longitude) over (partition by case_group_id)
+            max(longitude) over (partition by case_group_id),
+            -77.0563
         ) as healed_longitude
     from grouped
 )

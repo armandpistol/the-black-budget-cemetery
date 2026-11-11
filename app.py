@@ -595,7 +595,7 @@ def fetch_vault_dataframe(deduplicate_pages: bool = True) -> pd.DataFrame:
             df["intelligence_sector"] = df.apply(classify_record_sector, axis=1)
             df = df.fillna("N/A")
             if deduplicate_pages:
-                df = df[~df["nara_id"].str.contains(r"NARA-595466-092(04|57)-200(4|5)-00[234]-A", regex=True)]
+                df = df[~df["nara_id"].str.contains(r"NARA-595466-092(?:04|57)-200(?:4|5)-00[234]-A", regex=True)]
         return df
     finally:
         conn.close()
@@ -1042,4 +1042,20 @@ with gr.Blocks(
 
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    import inspect
+
+    DARK_MODE_JS = "() => { document.body.classList.add('dark'); document.documentElement.classList.add('dark'); }"
+    launch_params = inspect.signature(demo.launch).parameters
+
+    if "css" in launch_params:
+        # Gradio 6.0+ (Hugging Face Spaces Cloud Container)
+        demo.launch(
+            server_name="0.0.0.0",
+            server_port=7860,
+            css=TECH_NOIR_CSS,
+            head=TELETYPE_ENGINE_HEAD,
+            js=DARK_MODE_JS,
+        )
+    else:
+        # Gradio 4.x / 5.x (Local Workstation)
+        demo.launch(server_name="0.0.0.0", server_port=7860)

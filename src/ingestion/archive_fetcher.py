@@ -474,7 +474,11 @@ def fetch_via_nara_catalog_api(completed_ids: set, max_records: int = 2) -> int:
 
     print("[*] NARA_API_KEY detected! Querying live NARA Catalog API v2 (RG 615 & Agency RGs)...")
     api_url = "https://catalog.archives.gov/api/v2/records/search"
-    headers = {"x-api-key": api_key, "User-Agent": "BlackBudgetCemetery/2.0"}
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": api_key,
+        "User-Agent": "BlackBudgetCemetery/2.0",
+    }
     params = {
         "q": (
             '"Unidentified Aerial Phenomena" OR "Project Blue Book" OR "Project Moon Dust" '

@@ -1,22 +1,26 @@
 # noinspection SqlNoDataSourceInspection,SqlResolve
 """
 reference_rag_loader.py
-Private Deep-Reference RAG Chunker & Vector Loader.
-Slices e-books, peer-reviewed papers (.pdf, .txt, .md), and foundational monographs into
-overlapping semantic passages, generates 768-dim embeddings via nomic-embed-text,
-and upserts them into Supabase raw.reference_knowledge_chunks.
+LlamaIndex Sentence-Window & Hierarchical RAG Chunker for the Private Deep-Reference Vault.
+Uses llama_index.core (Document, SentenceWindowNodeParser, SentenceSplitter) to index focal passages
+into 768-dim vectors while preserving expanded surrounding context windows in Supabase metadata JSONB.
 """
 
 import os
 import pathlib
 import sys
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 from dotenv import load_dotenv
+import litellm
 from litellm import embedding
+from llama_index.core.node_parser import SentenceSplitter, SentenceWindowNodeParser
+from llama_index.core.schema import Document
 import pdfplumber
 import psycopg2
 from psycopg2.extras import Json
+
+litellm.suppress_debug_info = True
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
@@ -24,7 +28,6 @@ if str(PROJECT_ROOT) not in sys.path:
 
 load_dotenv(PROJECT_ROOT / ".env")
 
-# Built-in foundational academic & historical reference passages so the RAG vault works out of the box
 FOUNDATIONAL_MONOGRAPHS: List[Dict[str, Any]] = [
     {
         "source_title": "The Report on Unidentified Flying Objects (USAF Project Blue Book Monograph)",
@@ -84,41 +87,90 @@ def get_supabase_connection():
     return psycopg2.connect(pooler_url)
 
 
-def generate_chunk_embedding(text: str, ollama_base_url: str) -> List[float]:
-    """Generates a 768-dimension semantic vector via nomic-embed-text."""
-    # noinspection PyUnresolvedReferences
-    resp = embedding(
-        model="ollama/nomic-embed-text",
-        input=[text],
-        api_base=ollama_base_url,
-    )
-    return resp.data[0]["embedding"]
+def generate_chunk_embedding(text: str) -> List[float]:
+    """Generates a 768-dimension semantic vector via nomic-embed-text (tries .env URL then localhost:11434)."""
+    primary_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11435")
+    for url in [primary_url, "http://localhost:11434"]:
+        try:
+            # noinspection PyUnresolvedReferences
+            resp = embedding(
+                model="ollama/nomic-embed-text",
+                input=[text],
+                api_base=url,
+                timeout=10,
+            )
+            return resp.data[0]["embedding"]
+        except Exception:
+            continue
+    raise RuntimeError("Ollama nomic-embed-text endpoint unreachable on both configured port and 11434.")
 
 
-def sliding_window_chunk_text(text: str, chunk_words: int = 350, overlap_words: int = 50) -> List[str]:
+def parse_with_llamaindex_sentence_window(
+    raw_text: str,
+    doc_metadata: Dict[str, Any],
+) -> List[Dict[str, Any]]:
     """
-    Splits long book/paper text into overlapping word passages.
-    Why: 50-word sliding overlap prevents semantic thoughts from being severed at chunk boundaries.
+    LlamaIndex Path 1 (Sentence-Window & Semantic Node Parser):
+    Converts raw book/paper text into a LlamaIndex Document, parses it into sentence-window nodes
+    (or semantic 300-token chunks with window context for long books), and returns structured dicts
+    containing both the focal text (for sharp embedding) and the expanded surrounding 'window' metadata!
     """
-    words = text.split()
-    if not words:
-        return []
-    if len(words) <= chunk_words:
-        return [" ".join(words)]
+    llama_doc = Document(text=raw_text, metadata=doc_metadata)
 
-    chunks: List[str] = []
-    step = max(1, chunk_words - overlap_words)
-    for start in range(0, len(words), step):
-        passage = " ".join(words[start : start + chunk_words])
-        if len(passage.strip()) > 40:
-            chunks.append(passage)
-        if start + chunk_words >= len(words):
-            break
-    return chunks
+    # For concise monographs/abstracts, use SentenceWindowNodeParser(window_size=2)
+    # For full-length books/papers, group into 280-token sentence-aligned nodes with 45-token overlap
+    if len(raw_text.split()) <= 450:
+        window_parser = SentenceWindowNodeParser.from_defaults(
+            window_size=3,
+            window_metadata_key="window",
+            original_text_metadata_key="original_text",
+        )
+        nodes = window_parser.get_nodes_from_documents([llama_doc])
+        # Consolidate into a unified monograph node carrying full sentence-window metadata
+        full_window = " ".join(n.get_content() for n in nodes)
+        return [
+            {
+                "focal_text": raw_text.strip(),
+                "metadata": {
+                    **doc_metadata,
+                    "rag_engine": "llamaindex_sentence_window",
+                    "window": full_window,
+                    "original_text": nodes[0].get_content() if nodes else raw_text.strip(),
+                },
+            }
+        ]
+
+    splitter = SentenceSplitter(chunk_size=300, chunk_overlap=50)
+    nodes = splitter.get_nodes_from_documents([llama_doc])
+    parsed_chunks: List[Dict[str, Any]] = []
+
+    for idx, node in enumerate(nodes):
+        focal = node.get_content().strip()
+        if len(focal) < 40:
+            continue
+        # Build an expanded +/- 1 node context window for LlamaIndex MetadataReplacementPostProcessor
+        prev_text = nodes[idx - 1].get_content().strip() if idx > 0 else ""
+        next_text = nodes[idx + 1].get_content().strip() if idx < len(nodes) - 1 else ""
+        expanded_window = " ".join(part for part in (prev_text, focal, next_text) if part)
+
+        parsed_chunks.append(
+            {
+                "focal_text": focal,
+                "metadata": {
+                    **doc_metadata,
+                    "rag_engine": "llamaindex_sentence_window",
+                    "chunk_idx": idx,
+                    "total_nodes": len(nodes),
+                    "window": expanded_window[:1800],
+                    "original_text": focal,
+                },
+            }
+        )
+    return parsed_chunks
 
 
 def extract_text_from_private_file(file_path: pathlib.Path) -> str:
-    """Extracts raw text from digital .pdf e-books/papers or .txt/.md files without OCR overhead."""
+    """Extracts raw text from digital .pdf e-books/papers or .txt/.md files."""
     if file_path.suffix.lower() == ".pdf":
         pages_text = []
         with pdfplumber.open(file_path) as pdf:
@@ -142,7 +194,7 @@ def upsert_reference_chunk(
     metadata: Dict[str, Any],
     vec_768: List[float],
 ) -> None:
-    """Idempotently upserts a single semantic passage and its 768-dim vector into Supabase."""
+    """Idempotently upserts a LlamaIndex node and its expanded 'window' JSONB metadata into Supabase."""
     cursor.execute(
         """
         INSERT INTO raw.reference_knowledge_chunks (
@@ -172,29 +224,37 @@ def upsert_reference_chunk(
 
 def ingest_reference_library() -> int:
     """
-    1. Loads foundational peer-reviewed/monograph seeds across Sectors Alpha, Beta, and Gamma.
-    2. Scans data/raw/private_library/{alpha,beta,gamma} for any user-supplied PDF e-books or papers.
+    Indexes foundational monographs + any PDF/TXT/MD files in data/raw/private_library/
+    using LlamaIndex Sentence-Window node parsing.
     """
-    ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11435")
     conn = get_supabase_connection()
     cursor = conn.cursor()
     total_chunks = 0
 
     try:
-        # Check which (source_title, chunk_index) pairs are already in Supabase so we skip duplicates
-        cursor.execute("SELECT source_title, chunk_index FROM raw.reference_knowledge_chunks;")
-        existing_keys = {(row[0], row[1]) for row in cursor.fetchall()}
-        print(f"[*] Private RAG Radar: {len(existing_keys)} reference chunks already in Vault.")
+        cursor.execute(
+            "SELECT source_title, chunk_index, metadata->>'rag_engine' FROM raw.reference_knowledge_chunks;"
+        )
+        # Skip chunks that have already been upgraded to LlamaIndex sentence-window metadata
+        existing_keys = {
+            (row[0], row[1]) for row in cursor.fetchall() if row[2] == "llamaindex_sentence_window"
+        }
+        print(f"[*] LlamaIndex RAG Radar: {len(existing_keys)} sentence-window nodes already in Vault.")
 
-        # Phase 1: Ensure foundational sector monographs are indexed
+        # Phase 1: Index foundational sector monographs with LlamaIndex Sentence-Window metadata
         for item in FOUNDATIONAL_MONOGRAPHS:
             key = (item["source_title"], 0)
             if key in existing_keys:
-                print(f"  [SKIP] '{item['source_title'][:50]}...' already indexed.")
+                print(f"  [SKIP] '{item['source_title'][:50]}...' already LlamaIndex-indexed.")
                 continue
 
-            print(f"[*] Embedding [{item['sector_domain']}] reference: {item['source_title']}...")
-            vec = generate_chunk_embedding(item["text"], ollama_base_url=ollama_url)
+            nodes_data = parse_with_llamaindex_sentence_window(
+                raw_text=item["text"],
+                doc_metadata={"seed_monograph": True, "sector": item["sector_domain"]},
+            )
+            node_item = nodes_data[0]
+            print(f"[*] LlamaIndex Sentence-Window Embedding [{item['sector_domain']}]: {item['source_title']}...")
+            vec = generate_chunk_embedding(node_item["focal_text"])
             upsert_reference_chunk(
                 cursor=cursor,
                 source_title=item["source_title"],
@@ -203,8 +263,8 @@ def ingest_reference_library() -> int:
                 document_category=item["document_category"],
                 sector_domain=item["sector_domain"],
                 chunk_index=0,
-                chunk_text=item["text"],
-                metadata={"seed_monograph": True},
+                chunk_text=node_item["focal_text"],
+                metadata=node_item["metadata"],
                 vec_768=vec,
             )
             conn.commit()
@@ -217,19 +277,21 @@ def ingest_reference_library() -> int:
                 if not file_path.is_file() or file_path.suffix.lower() not in (".pdf", ".txt", ".md"):
                     continue
 
-                # Determine sector from parent folder name (alpha, beta, gamma -> default ALL)
                 parent_folder = file_path.parent.name.upper()
                 sector = parent_folder if parent_folder in ("ALPHA", "BETA", "GAMMA") else "ALL"
                 title = file_path.stem.replace("_", " ").replace("-", " ").title()
 
                 raw_text = extract_text_from_private_file(file_path)
-                chunks = sliding_window_chunk_text(raw_text, chunk_words=350, overlap_words=50)
-                print(f"[*] Processing private book/paper '{title}' ({len(chunks)} chunks, Sector {sector})...")
+                nodes_data = parse_with_llamaindex_sentence_window(
+                    raw_text=raw_text,
+                    doc_metadata={"filename": file_path.name, "sector": sector},
+                )
+                print(f"[*] LlamaIndex parsing '{title}' ({len(nodes_data)} window nodes, Sector {sector})...")
 
-                for idx, passage in enumerate(chunks):
+                for idx, node_item in enumerate(nodes_data):
                     if (title, idx) in existing_keys:
                         continue
-                    vec = generate_chunk_embedding(passage, ollama_base_url=ollama_url)
+                    vec = generate_chunk_embedding(node_item["focal_text"])
                     upsert_reference_chunk(
                         cursor=cursor,
                         source_title=title,
@@ -238,14 +300,14 @@ def ingest_reference_library() -> int:
                         document_category="EBOOK_OR_PAPER",
                         sector_domain=sector,
                         chunk_index=idx,
-                        chunk_text=passage,
-                        metadata={"filename": file_path.name, "total_chunks": len(chunks)},
+                        chunk_text=node_item["focal_text"],
+                        metadata=node_item["metadata"],
                         vec_768=vec,
                     )
                     total_chunks += 1
                 conn.commit()
 
-        print(f"\n[+] Private RAG Library sync complete. Newly indexed chunks: {total_chunks}")
+        print(f"\n[+] LlamaIndex Private RAG sync complete. Newly indexed/upgraded window nodes: {total_chunks}")
         return total_chunks
     finally:
         cursor.close()

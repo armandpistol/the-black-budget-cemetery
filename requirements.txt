@@ -9,4 +9,8 @@ litellm
 psycopg2-binary
 dbt-postgres
 opencv-python-headless
-
+langgraph
+gradio
+plotly
+pandas
+llama-index-core

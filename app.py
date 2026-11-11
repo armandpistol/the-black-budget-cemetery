@@ -36,7 +36,7 @@ from src.agents.sector_graph import interrogate_cemetery
 TECH_NOIR_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Share+Tech+Mono&display=swap');
 
-body, .gradio-container {
+html, body, .dark, .gradio-container, main, .app {
     background-color: #0A0907 !important;
     background-image: radial-gradient(circle at 50% 12%, #14110d 0%, #0A0907 80%) !important;
     color: #d6d1c7 !important;
@@ -46,22 +46,22 @@ body, .gradio-container {
 
 /* Single Ghost-Like Horizontal Cathode Sweep Line passing slowly down the monitor */
 .gradio-container::before {
-    content: "";
-    position: fixed;
+    content: "" !important;
+    position: fixed !important;
     top: -15%;
     left: 0;
-    width: 100%;
-    height: 90px;
+    width: 100% !important;
+    height: 90px !important;
     background: linear-gradient(
         180deg,
         rgba(217, 27, 36, 0) 0%,
         rgba(217, 27, 36, 0.04) 45%,
         rgba(0, 255, 102, 0.07) 50%,
         rgba(217, 27, 36, 0) 100%
-    );
-    z-index: 9998;
-    pointer-events: none;
-    animation: crt-ghost-sweep 18s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    ) !important;
+    z-index: 9998 !important;
+    pointer-events: none !important;
+    animation: crt-ghost-sweep 18s linear infinite !important;
 }
 @keyframes crt-ghost-sweep {
     0%   { top: -15%; opacity: 0; }
@@ -70,124 +70,126 @@ body, .gradio-container {
     100% { top: 115%; opacity: 0; }
 }
 
-/* Centered Clandestine Bunker Main Header */
+/* Centered Clandestine Bunker Main Header (!important enforced for Gradio 6 SSR) */
 .crt-banner {
-    background: linear-gradient(180deg, #120f0c 0%, #0A0907 100%);
-    border: 1px solid #2b231d;
-    border-top: 3px solid #D91B24;
-    border-bottom: 2px solid #2b231d;
-    padding: 20px 24px;
-    margin-bottom: 14px;
-    text-align: center;
-    box-shadow: inset 0 0 45px rgba(0, 0, 0, 0.9), 0 4px 20px rgba(0, 0, 0, 0.6);
+    background: linear-gradient(180deg, #120f0c 0%, #0A0907 100%) !important;
+    border: 1px solid #2b231d !important;
+    border-top: 3px solid #D91B24 !important;
+    border-bottom: 2px solid #2b231d !important;
+    padding: 20px 24px !important;
+    margin-bottom: 14px !important;
+    text-align: center !important;
+    box-shadow: inset 0 0 45px rgba(0, 0, 0, 0.9), 0 4px 20px rgba(0, 0, 0, 0.6) !important;
 }
 .crt-banner .classified-stamp {
-    color: #D91B24;
-    font-size: 0.76rem;
-    font-weight: 700;
-    letter-spacing: 3.5px;
-    margin-bottom: 6px;
-    text-shadow: 0 0 8px rgba(217, 27, 36, 0.45);
+    color: #D91B24 !important;
+    font-size: 0.76rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 3.5px !important;
+    margin-bottom: 6px !important;
+    text-shadow: 0 0 8px rgba(217, 27, 36, 0.45) !important;
 }
 .crt-banner h1 {
     color: #ede8df !important;
     font-family: 'Black Ops One', system-ui, sans-serif !important;
     font-weight: 400 !important;
-    letter-spacing: 5px;
-    font-size: 2.35rem;
-    margin: 4px 0 8px 0;
-    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.95), 0 0 20px rgba(217, 27, 36, 0.28);
+    letter-spacing: 5px !important;
+    font-size: 2.35rem !important;
+    margin: 4px 0 8px 0 !important;
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.95), 0 0 20px rgba(217, 27, 36, 0.28) !important;
 }
 .crt-banner p {
     color: #8c7f70 !important;
-    margin: 0;
-    font-size: 0.82rem;
-    letter-spacing: 2px;
+    margin: 0 !important;
+    font-size: 0.82rem !important;
+    letter-spacing: 2px !important;
 }
 
-/* Left Column: Mechanical Tactical Grid Structure */
+/* Left Column: Mechanical Tactical Grid Structure (!important enforced for Gradio 6) */
 .tactical-hud-chassis {
-    background-color: #0d0b09;
-    border: 2px solid #28211b;
-    box-shadow: inset 0 2px 10px rgba(0,0,0,0.95);
-    margin-top: 8px;
-    font-family: 'IBM Plex Mono', monospace;
+    background-color: #0d0b09 !important;
+    border: 2px solid #28211b !important;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.95) !important;
+    margin-top: 8px !important;
+    font-family: 'IBM Plex Mono', monospace !important;
 }
 .tactical-hud-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #16120e;
-    border-bottom: 1px solid #28211b;
-    padding: 6px 12px;
-    font-size: 0.76rem;
-    letter-spacing: 1.5px;
-    color: #9c8f7f;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background-color: #16120e !important;
+    border-bottom: 1px solid #28211b !important;
+    padding: 6px 12px !important;
+    font-size: 0.76rem !important;
+    letter-spacing: 1.5px !important;
+    color: #9c8f7f !important;
 }
 .hud-corner {
-    color: #D91B24;
-    font-weight: 700;
+    color: #D91B24 !important;
+    font-weight: 700 !important;
 }
 .hud-sys-title {
-    color: #d6d1c7;
-    font-weight: 600;
+    color: #d6d1c7 !important;
+    font-weight: 600 !important;
 }
 .hud-lock-lamp {
-    color: #00FF66;
-    font-weight: 600;
-    text-shadow: 0 0 6px rgba(0, 255, 102, 0.5);
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    color: #00FF66 !important;
+    font-weight: 600 !important;
+    text-shadow: 0 0 6px rgba(0, 255, 102, 0.5) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
 }
 .led-green {
-    width: 8px;
-    height: 8px;
-    background-color: #00FF66;
-    border-radius: 50%;
-    display: inline-block;
-    box-shadow: 0 0 8px #00FF66;
+    width: 8px !important;
+    height: 8px !important;
+    background-color: #00FF66 !important;
+    border-radius: 50% !important;
+    display: inline-block !important;
+    box-shadow: 0 0 8px #00FF66 !important;
 }
 .led-standby {
-    width: 8px;
-    height: 8px;
-    background-color: #D91B24;
-    border-radius: 50%;
-    display: inline-block;
-    box-shadow: 0 0 8px #D91B24;
+    width: 8px !important;
+    height: 8px !important;
+    background-color: #D91B24 !important;
+    border-radius: 50% !important;
+    display: inline-block !important;
+    box-shadow: 0 0 8px #D91B24 !important;
 }
 .tactical-grid-matrix {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    background-color: #28211b;
-    gap: 1px;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    background-color: #28211b !important;
+    gap: 1px !important;
+    border: 1px solid #28211b !important;
 }
 .tactical-cell {
-    background-color: #0b0907;
-    padding: 10px 14px;
+    background-color: #0b0907 !important;
+    padding: 10px 14px !important;
+    border: 1px solid #1c1713 !important;
 }
 .cell-index {
-    font-size: 0.68rem;
-    color: #6e6256;
-    letter-spacing: 1.5px;
-    margin-bottom: 4px;
-    font-weight: 600;
+    font-size: 0.68rem !important;
+    color: #6e6256 !important;
+    letter-spacing: 1.5px !important;
+    margin-bottom: 4px !important;
+    font-weight: 600 !important;
 }
 .cell-value {
-    font-size: 0.78rem;
-    line-height: 1.35;
-    color: #e6e1d6;
-    font-weight: 600;
-    word-break: break-word;
-    white-space: normal;
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+    color: #e6e1d6 !important;
+    font-weight: 600 !important;
+    word-break: break-word !important;
+    white-space: normal !important;
 }
 .cell-crimson {
     color: #ff4750 !important;
-    text-shadow: 0 0 6px rgba(217, 27, 36, 0.35);
+    text-shadow: 0 0 6px rgba(217, 27, 36, 0.35) !important;
 }
 .cell-phosphor {
     color: #00FF66 !important;
-    text-shadow: 0 0 6px rgba(0, 255, 102, 0.35);
+    text-shadow: 0 0 6px rgba(0, 255, 102, 0.35) !important;
 }
 
 /* Right Column: Heavy Hardware Flip-Switch Agent Routing */
@@ -212,7 +214,6 @@ body, .gradio-container {
     border-color: #5c4b3b !important;
     color: #d6d1c7 !important;
 }
-/* Flip-Switch Engaged State: Unlit Red/Amber -> Glowing Phosphor Green (#00FF66) */
 .hardware-switch-bank label.selected,
 .hardware-switch-bank label:has(input:checked) {
     background: linear-gradient(90deg, rgba(0, 255, 102, 0.10) 0%, #0f1410 100%) !important;
@@ -286,82 +287,82 @@ textarea:focus {
     box-shadow: 0 0 10px rgba(217, 27, 36, 0.25), inset 0 2px 8px rgba(0,0,0,0.85) !important;
 }
 
-/* Asynchronous Teletype Console & High-Voltage Radioactive Phosphor Stream */
+/* Asynchronous Teletype Console & Agent Boxes (!important enforced for Gradio 6) */
 .teletype-console-housing {
-    background-color: #080705;
-    border: 2px solid #261f19;
-    border-top: 2px solid #D91B24;
-    padding: 18px 22px;
-    min-height: 260px;
-    box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.95);
-    font-family: 'IBM Plex Mono', monospace;
+    background-color: #080705 !important;
+    border: 2px solid #261f19 !important;
+    border-top: 2px solid #D91B24 !important;
+    padding: 18px 22px !important;
+    min-height: 260px !important;
+    box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.95) !important;
+    font-family: 'IBM Plex Mono', monospace !important;
 }
 .agent-transmission-block {
-    background-color: #0d0b09;
-    border: 1px solid #241e18;
-    padding: 16px 20px;
-    margin-bottom: 18px;
+    background-color: #0d0b09 !important;
+    border: 1px solid #241e18 !important;
+    padding: 16px 20px !important;
+    margin-bottom: 18px !important;
 }
 .agent-header-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 8px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid #241e18;
-    font-weight: 700;
-    font-size: 0.98rem;
-    letter-spacing: 1.4px;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 12px !important;
+    border-bottom: 1px solid #241e18 !important;
+    font-weight: 700 !important;
+    font-size: 0.96rem !important;
+    letter-spacing: 1.4px !important;
 }
 .agent-clearance-tag {
-    font-size: 0.72rem;
-    letter-spacing: 1.5px;
-    padding: 2px 8px;
-    border: 1px solid currentColor;
-    opacity: 0.85;
+    font-size: 0.72rem !important;
+    letter-spacing: 1.5px !important;
+    padding: 2px 8px !important;
+    border: 1px solid currentColor !important;
+    opacity: 0.9 !important;
 }
 
-/* Distinct Institutional Agent Header Tones */
+/* Distinct Institutional Agent Header Tones (Draco=#00F0FF, Sapelli=#FF00FF, Callista=#9D43FA) */
 .tone-alpha .agent-header-bar {
-    color: #00F0FF;
-    border-bottom-color: rgba(0, 240, 255, 0.35);
-    text-shadow: 0 0 8px rgba(0, 240, 255, 0.45);
+    color: #00F0FF !important;
+    border-bottom-color: rgba(0, 240, 255, 0.35) !important;
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.45) !important;
 }
-.tone-alpha { border-left: 4px solid #00F0FF; }
+.tone-alpha { border-left: 4px solid #00F0FF !important; }
 
 .tone-beta .agent-header-bar {
-    color: #FF00FF;
-    border-bottom-color: rgba(255, 0, 255, 0.35);
-    text-shadow: 0 0 8px rgba(255, 0, 255, 0.45);
+    color: #FF00FF !important;
+    border-bottom-color: rgba(255, 0, 255, 0.35) !important;
+    text-shadow: 0 0 8px rgba(255, 0, 255, 0.45) !important;
 }
-.tone-beta { border-left: 4px solid #FF00FF; }
+.tone-beta { border-left: 4px solid #FF00FF !important; }
 
 .tone-gamma .agent-header-bar {
-    color: #9D43FA;
-    border-bottom-color: rgba(157, 67, 250, 0.4);
-    text-shadow: 0 0 8px rgba(157, 67, 250, 0.5);
+    color: #9D43FA !important;
+    border-bottom-color: rgba(157, 67, 250, 0.4) !important;
+    text-shadow: 0 0 8px rgba(157, 67, 250, 0.5) !important;
 }
-.tone-gamma { border-left: 4px solid #9D43FA; }
+.tone-gamma { border-left: 4px solid #9D43FA !important; }
 
 /* Radioactive Phosphor Text & Blinking High-Voltage Cursor */
 .agent-stream-body {
-    font-size: 15.5px;
-    line-height: 1.75;
-    color: #d8e6df;
-    text-shadow: 0 0 4px rgba(0, 255, 102, 0.14);
-    white-space: pre-wrap;
+    font-size: 15.5px !important;
+    line-height: 1.75 !important;
+    color: #d8e6df !important;
+    text-shadow: 0 0 4px rgba(0, 255, 102, 0.14) !important;
+    white-space: pre-wrap !important;
 }
 .typing-active {
-    color: #e4fff0;
-    text-shadow: 0 0 7px rgba(0, 255, 102, 0.38);
+    color: #e4fff0 !important;
+    text-shadow: 0 0 7px rgba(0, 255, 102, 0.38) !important;
 }
 .rad-cursor {
-    display: inline-block;
-    color: #00FF66;
-    font-weight: 700;
-    margin-left: 3px;
-    text-shadow: 0 0 10px #00FF66, 0 0 20px #00FF66;
-    animation: rad-blink 0.55s steps(2, start) infinite;
+    display: inline-block !important;
+    color: #00FF66 !important;
+    font-weight: 700 !important;
+    margin-left: 3px !important;
+    text-shadow: 0 0 10px #00FF66, 0 0 20px #00FF66 !important;
+    animation: rad-blink 0.55s steps(2, start) infinite !important;
 }
 @keyframes rad-blink {
     0%, 100% { opacity: 1; }
@@ -370,18 +371,18 @@ textarea:focus {
 
 /* Regex-Wrapped [CASE-ID] Tracking Stamp */
 .case-ref-tag {
-    display: inline-block;
-    background-color: rgba(217, 27, 36, 0.15);
-    border: 1px solid #D91B24;
-    color: #ff6b72;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.85em;
-    font-weight: 600;
-    padding: 0px 6px;
-    margin: 0 2px;
-    border-radius: 2px;
-    letter-spacing: 0.6px;
-    text-shadow: 0 0 6px rgba(217, 27, 36, 0.4);
+    display: inline-block !important;
+    background-color: rgba(217, 27, 36, 0.15) !important;
+    border: 1px solid #D91B24 !important;
+    color: #ff6b72 !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    font-size: 0.85em !important;
+    font-weight: 600 !important;
+    padding: 0px 6px !important;
+    margin: 0 2px !important;
+    border-radius: 2px !important;
+    letter-spacing: 0.6px !important;
+    text-shadow: 0 0 6px rgba(217, 27, 36, 0.4) !important;
 }
 """
 
@@ -850,7 +851,12 @@ def inspect_case_dossier(selection: str) -> Tuple[str, str, object]:
     )
 
     radar_fig.update_layout(
-        title="R.E.A.P.E.R. [MOD-0] // 5-AXIS CLANDESTINE THREAT SIGNATURE",
+        title=dict(
+            text="R.E.A.P.E.R. [MOD-0] // 5-AXIS THREAT SIGNATURE",
+            x=0.5,
+            xanchor="center",
+            font=dict(size=12, color="#d6d1c7"),
+        ),
         paper_bgcolor="#0A0907",
         plot_bgcolor="#0A0907",
         font=dict(family="IBM Plex Mono, monospace", color="#d6d1c7", size=11),
@@ -858,7 +864,8 @@ def inspect_case_dossier(selection: str) -> Tuple[str, str, object]:
         margin=dict(l=90, r=90, t=55, b=45),
         polar=dict(
             bgcolor="#0d0b09",
-            radialaxis=dict(visible=True, range=[0, 10], gridcolor="#28211b", linecolor="#28211b", tickfont=dict(size=9, color="#8c7f70")),
+            radialaxis=dict(visible=True, range=[0, 10], gridcolor="#28211b", linecolor="#28211b",
+                            tickfont=dict(size=9, color="#8c7f70")),
             angularaxis=dict(gridcolor="#28211b", linecolor="#D91B24"),
         ),
         legend=dict(
@@ -937,7 +944,7 @@ with gr.Blocks(
 
     with gr.Tabs():
         # TAB 1: R.E.A.P.E.R. [MOD-0] WAR-ROOM INTERROGATION CONSOLE
-        with gr.TabItem("📡 R.E.A.P.E.R. [MOD-0] // WAR-ROOM INTERROGATION"):
+        with gr.TabItem("📡 R.E.A.P.E.R. [MOD-0] // WAR-ROOM"):
             with gr.Row():
                 # Left Column: Command Directive + Mechanical Tactical Grid HUD
                 with gr.Column(scale=3):
@@ -1005,7 +1012,7 @@ with gr.Blocks(
             )
 
         # TAB 2: INTERACTIVE POSTGIS GLOBAL ANOMALY RADAR MAP
-        with gr.TabItem("🗺️ POSTGIS SRID-4326 // 3-SECTOR GLOBAL RADAR"):
+        with gr.TabItem("🗺️ POSTGIS // 3-SECTOR GLOBAL RADAR"):
             refresh_map_btn = gr.Button("🔄 REFRESH LIVE SUPABASE POSTGIS RADAR", variant="secondary")
             kpi_banner = gr.HTML()
             radar_plot = gr.Plot()
@@ -1014,7 +1021,7 @@ with gr.Blocks(
             demo.load(fn=build_postgis_radar_map, outputs=[radar_plot, kpi_banner])
 
         # TAB 3: INTERACTIVE CLASSIFIED CASE DOSSIER INSPECTOR & SECTOR ANALYTICS
-        with gr.TabItem("📂 CLASSIFIED EVIDENCE LOCKER // DOSSIER INSPECTOR"):
+        with gr.TabItem("📂 CLASSIFIED DOSSIER LOCKER"):
             initial_choices = get_dossier_choices()
             default_choice = initial_choices[0] if initial_choices else None
             dossier_dropdown = gr.Dropdown(
@@ -1048,14 +1055,14 @@ if __name__ == "__main__":
     launch_params = inspect.signature(demo.launch).parameters
 
     if "css" in launch_params:
-        # Gradio 6.0+ (Hugging Face Spaces Cloud Container)
+        # Gradio 6.0+ (Hugging Face Spaces Cloud Container — disable SSR proxy so custom CSS/HTML renders cleanly)
         demo.launch(
             server_name="0.0.0.0",
             server_port=7860,
             css=TECH_NOIR_CSS,
             head=TELETYPE_ENGINE_HEAD,
             js=DARK_MODE_JS,
+            ssr_mode=False,
         )
     else:
-        # Gradio 4.x / 5.x (Local Workstation)
         demo.launch(server_name="0.0.0.0", server_port=7860)

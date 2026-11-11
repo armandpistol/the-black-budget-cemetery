@@ -5,6 +5,7 @@ colorFrom: red
 colorTo: gray
 sdk: gradio
 app_file: app.py
+short_description: Tri-Modal AI, Hybrid RAG & Multi-Agent Intelligence Matrix
 pinned: true
 ---
 
